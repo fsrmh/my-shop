@@ -3,362 +3,370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xin-Shop 3.0 | 旗舰级电商系统</title>
+    <title>Xin-Shop 3.0 | 旗舰级全功能电商</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         [v-cloak] { display: none; }
-        html { scroll-behavior: smooth; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .product-card:hover { transform: translateY(-5px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
-        .gallery-thumbnail { border: 2px solid transparent; cursor: pointer; transition: all 0.2s; }
-        .gallery-thumbnail.active { border-color: #3B82F6; transform: scale(1.05); }
-
-        /* 购物车侧滑动画 */
-        @keyframes slideInFromRight { from { transform: translateX(100%); opacity: 0.8; } to { transform: translateX(0); opacity: 1; } }
-        .slide-in-cart { animation: slideInFromRight 0.4s ease-out; }
-
-        /* 支付弹窗动画 */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-in-modal { animation: fadeIn 0.3s ease-out; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .glass-effect { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
+        .payment-card { perspective: 1000px; }
+        .step-active { color: #2563eb; border-bottom: 2px solid #2563eb; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 font-sans text-slate-800">
+<body class="bg-gray-50 font-sans antialiased text-slate-900">
 
 <div id="app" v-cloak>
-    <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white text-xs py-2 text-center font-medium tracking-wide uppercase">
-        <span class="animate-pulse">✨ Xin-Shop 3.0 全球首发 | 限量商品火热抢购中 ✨</span>
+    <div class="bg-blue-600 text-white py-1.5 text-center text-[10px] font-bold tracking-[0.2em]">
+        SYSTEM STATUS: SECURE | ENCRYPTED TRANSACTIONS | GLOBAL LOGISTICS ACTIVE
     </div>
 
-    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 shadow-sm">
-        <div class="container mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-8">
-                <a href="#" class="text-3xl font-black tracking-tight text-slate-900">XIN<span class="text-blue-600">.</span>SHOP</a>
-                <div class="hidden lg:flex gap-6 text-sm font-bold text-slate-600">
-                    <button v-for="c in categories" @click="activeCategory = c" 
-                            :class="['transition', activeCategory === c ? 'text-blue-600' : 'hover:text-slate-900']">
-                        {{c}}
-                    </button>
+    <nav class="glass-effect sticky top-0 z-40 border-b border-gray-200">
+        <div class="container mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-10">
+                <a @click="currentView = 'mall'" class="cursor-pointer text-3xl font-black tracking-tighter italic">
+                    XIN<span class="text-blue-600">.</span>CORE
+                </a>
+                <div class="hidden md:flex gap-8 text-xs font-bold uppercase tracking-widest text-slate-500">
+                    <button @click="currentView = 'mall'" :class="{'text-blue-600': currentView === 'mall'}">商城首页</button>
+                    <button @click="currentView = 'orders'" :class="{'text-blue-600': currentView === 'orders'}">我的订单</button>
                 </div>
             </div>
             
-            <div class="flex items-center gap-5">
-                <div class="relative hidden sm:block">
-                    <input v-model="searchQuery" type="text" placeholder="搜索黑科技..." 
-                           class="bg-slate-100 border-none rounded-full py-2 pl-4 pr-10 text-sm w-48 focus:w-64 transition-all duration-300 focus:ring-2 focus:ring-blue-300">
-                    <span class="absolute right-3 top-2 text-slate-400">🔍</span>
+            <div class="flex items-center gap-6">
+                <div class="relative">
+                    <input v-model="search" type="text" placeholder="探索未来硬件..." 
+                           class="bg-gray-100 border-none rounded-xl py-2 px-4 text-sm w-40 md:w-64 focus:ring-2 focus:ring-blue-500 transition-all">
                 </div>
-                <button @click="isCartOpen = true" class="p-2 hover:bg-slate-100 rounded-full relative transition">
-                    <svg class="w-6 h-6 text-slate-600 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                    <span v-if="cartCount > 0" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce-slow">
-                        {{cartCount}}
+                <button @click="isCartOpen = true" class="group relative p-2">
+                    <svg class="w-6 h-6 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span v-if="cart.length > 0" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center border-2 border-white font-black">
+                        {{ cartCount }}
                     </span>
-                </button>
-                 <button @click="showOrderHistory = true" class="p-2 hover:bg-slate-100 rounded-full relative transition">
-                    <svg class="w-6 h-6 text-slate-600 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                 </button>
             </div>
         </div>
     </nav>
 
-    <main class="container mx-auto px-4 py-12">
-        <section class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 md:p-12 mb-12 flex flex-col md:flex-row items-center justify-between text-white relative overflow-hidden shadow-xl">
-            <div class="z-10 md:w-1/2 text-center md:text-left">
-                <span class="text-blue-300 font-bold tracking-widest text-sm uppercase">重磅发布</span>
-                <h2 class="text-4xl md:text-6xl font-black mt-4 mb-6 leading-tight">智核显卡 <br>RTX 5090 Ti <span class="text-blue-400 text-5xl">Ultra</span></h2>
-                <p class="text-slate-400 mb-8 max-w-sm text-base leading-relaxed">2nm 制程，内置 Xin-Shop 专属 AI 冷却模块，限时首发，性能巅峰！</p>
-                <button @click="scrollToProducts" class="bg-white text-slate-900 px-10 py-4 rounded-full font-bold hover:bg-blue-500 hover:text-white transition shadow-lg">探索新品</button>
-            </div>
-            <div class="text-[14rem] md:text-[20rem] opacity-10 md:opacity-15 absolute right-0 bottom-0 pointer-events-none font-black tracking-tighter text-slate-700">GPU</div>
-        </section>
-
-        <section id="product-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            <div v-for="product in filteredProducts" :key="product.id" @click="openProductDetail(product)"
-                 class="product-card bg-white border border-slate-100 rounded-2xl p-5 hover:shadow-2xl hover:shadow-blue-50 transition-all duration-300 flex flex-col cursor-pointer">
-                <div class="relative aspect-square mb-4 overflow-hidden rounded-xl bg-slate-100 flex items-center justify-center">
-                    <img :src="product.images[0]" :alt="product.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                    <div v-if="product.stock === 0" class="absolute inset-0 bg-black/50 text-white flex items-center justify-center text-lg font-bold">缺货</div>
-                </div>
-                <div class="flex-1 flex flex-col">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-bold text-lg text-slate-900">{{product.name}}</h3>
-                        <span class="text-xl font-black text-blue-600">¥{{product.price}}</span>
+    <div v-if="currentView === 'mall'">
+        <header class="container mx-auto px-4 py-8">
+            <div class="relative rounded-[2.5rem] bg-slate-900 h-[450px] overflow-hidden flex items-center shadow-2xl">
+                <div class="absolute inset-0 opacity-30">
+                    <div class="grid grid-cols-6 h-full w-full">
+                        <div v-for="n in 24" class="border-[0.5px] border-slate-700"></div>
                     </div>
-                    <p class="text-sm text-slate-500 mb-4 line-clamp-2">{{product.shortDesc}}</p>
                 </div>
-                <div class="flex justify-between items-center mt-auto pt-4 border-t border-slate-100">
-                    <span :class="['text-xs font-bold uppercase tracking-wider', product.stock > 0 ? 'text-green-600' : 'text-red-500']">
-                        ● {{ product.stock > 0 ? '有现货 (' + product.stock + ')' : '暂无库存' }}
-                    </span>
-                    <button @click.stop="addToCart(product)" :disabled="product.stock <= 0" 
-                            class="bg-blue-600 text-white text-sm px-5 py-2 rounded-lg font-bold disabled:bg-slate-300 disabled:cursor-not-allowed hover:bg-blue-700 transition shadow-md">
-                        加入购物车
+                <div class="relative z-10 px-12 md:px-24">
+                    <div class="inline-block px-4 py-1 rounded-full border border-blue-500 text-blue-400 text-[10px] font-bold mb-6">SPRING 2026 DROP</div>
+                    <h2 class="text-5xl md:text-7xl font-black text-white leading-none">智核进化<br><span class="text-blue-600">QUANTUM X</span></h2>
+                    <p class="mt-6 text-slate-400 max-w-md text-lg">搭载第三代量子计算单元，性能提升 600%，现已开放现货供应。</p>
+                    <button @click="scrollToProducts" class="mt-10 bg-white text-black px-10 py-4 rounded-full font-black text-sm hover:bg-blue-600 hover:text-white transition-all transform hover:scale-105">探索商品</button>
+                </div>
+            </div>
+        </header>
+
+        <main id="mall-main" class="container mx-auto px-4 py-12">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                <div>
+                    <h3 class="text-3xl font-black">热门单品</h3>
+                    <p class="text-slate-500 mt-2 font-medium tracking-tight">为您精选全球顶级科技硬件</p>
+                </div>
+                <div class="flex gap-2 p-1 bg-gray-200 rounded-xl">
+                    <button v-for="c in categories" @click="activeCat = c" 
+                            :class="['px-6 py-2 rounded-lg text-xs font-bold transition-all', activeCat === c ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-900']">
+                        {{ c }}
                     </button>
                 </div>
             </div>
-        </section>
-    </main>
 
-    <div v-if="selectedProduct" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl p-8 flex flex-col lg:flex-row gap-8 fade-in-modal relative">
-            <button @click="closeProductDetail" class="absolute top-4 right-4 text-slate-500 hover:text-slate-900 text-3xl font-light">&times;</button>
-            
-            <div class="lg:w-1/2">
-                <div class="relative w-full aspect-square bg-slate-100 rounded-lg overflow-hidden mb-4">
-                    <img :src="selectedProduct.images[currentImageIndex]" :alt="selectedProduct.name" class="w-full h-full object-cover" />
-                </div>
-                <div class="flex gap-3 overflow-x-auto scrollbar-hide">
-                    <img v-for="(img, index) in selectedProduct.images" :key="index" :src="img" 
-                         @click="currentImageIndex = index"
-                         :class="['w-16 h-16 object-cover rounded-md', 'gallery-thumbnail', { 'active': currentImageIndex === index }]" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div v-for="p in filteredProducts" :key="p.id" 
+                     class="group bg-white rounded-[2rem] p-6 border border-gray-100 hover:border-blue-200 hover:shadow-2xl transition-all duration-500 flex flex-col">
+                    <div @click="openDetail(p)" class="cursor-pointer relative aspect-square mb-6 bg-gray-50 rounded-2xl flex items-center justify-center text-7xl overflow-hidden">
+                        <span class="transition-transform duration-700 group-hover:scale-125">{{ p.emoji }}</span>
+                        <div class="absolute top-4 right-4 bg-white/80 px-3 py-1 rounded-full text-[10px] font-black shadow-sm">¥{{ p.price }}</div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-[10px] font-bold text-blue-600 mb-2 uppercase tracking-tighter">{{ p.category }}</div>
+                        <h4 class="font-black text-lg text-slate-900 leading-tight mb-3">{{ p.name }}</h4>
+                        <p class="text-slate-500 text-xs leading-relaxed line-clamp-2">{{ p.desc }}</p>
+                    </div>
+                    <div class="mt-6 flex gap-2">
+                        <button @click="addToCart(p)" :disabled="p.stock <= 0" 
+                                class="flex-1 bg-slate-900 text-white py-3 rounded-xl text-xs font-bold hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors">
+                            {{ p.stock > 0 ? '加入购物车' : '无货' }}
+                        </button>
+                        <button @click="openDetail(p)" class="px-4 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">🔍</button>
+                    </div>
                 </div>
             </div>
+        </main>
+    </div>
 
-            <div class="lg:w-1/2 flex flex-col">
-                <span class="text-sm font-bold text-blue-600 uppercase mb-2">{{selectedProduct.category}}</span>
-                <h3 class="text-3xl font-black mb-4 leading-tight">{{selectedProduct.name}}</h3>
-                <p class="text-slate-500 text-sm mb-6 flex-1">{{selectedProduct.longDesc}}</p>
-                
-                <div class="flex items-center justify-between mb-6">
-                    <span class="text-4xl font-black text-blue-600">¥{{selectedProduct.price}}</span>
-                    <span :class="['text-sm font-bold uppercase', selectedProduct.stock > 0 ? 'text-green-600' : 'text-red-500']">
-                        库存: {{ selectedProduct.stock > 0 ? selectedProduct.stock : '无' }}
-                    </span>
+    <div v-if="currentView === 'orders'" class="container mx-auto px-4 py-12 max-w-4xl min-h-[60vh]">
+        <h3 class="text-4xl font-black mb-10 tracking-tighter">订单历史记录</h3>
+        <div v-if="orderHistory.length === 0" class="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
+            <p class="text-slate-400">尚无成功交易记录</p>
+            <button @click="currentView = 'mall'" class="mt-4 text-blue-600 font-bold">前往选购商品</button>
+        </div>
+        <div v-else class="space-y-6">
+            <div v-for="order in orderHistory" :key="order.id" class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+                <div class="flex justify-between items-start mb-6 pb-6 border-b">
+                    <div>
+                        <div class="text-xs font-black text-blue-600 uppercase mb-1">订单确认</div>
+                        <div class="font-mono text-sm">#{{ order.id }}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-slate-400 mb-1">下单时间</div>
+                        <div class="text-sm font-bold">{{ order.date }}</div>
+                    </div>
                 </div>
-                
-                <button @click="addToCart(selectedProduct); closeProductDetail();" :disabled="selectedProduct.stock <= 0"
-                        class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition disabled:bg-slate-300 disabled:cursor-not-allowed shadow-md">
-                    {{ selectedProduct.stock > 0 ? '立即加入购物车' : '商品已售罄' }}
-                </button>
+                <div class="space-y-4">
+                    <div v-for="item in order.items" class="flex justify-between items-center">
+                        <span class="text-slate-600 text-sm">{{ item.name }} x {{ item.qty }}</span>
+                        <span class="font-bold">¥{{ item.price * item.qty }}</span>
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-between items-center pt-6 border-t">
+                    <span class="text-slate-900 font-black">支付金额</span>
+                    <span class="text-2xl font-black text-blue-600">¥{{ order.total }}</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div v-if="isCartOpen" class="fixed inset-0 z-50 flex justify-end">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="isCartOpen = false"></div>
-        <div class="relative w-full max-w-md bg-white shadow-2xl flex flex-col slide-in-cart">
-            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-                <h2 class="text-2xl font-black italic">我的购物清单</h2>
-                <button @click="isCartOpen = false" class="text-slate-400 hover:text-slate-900 text-3xl font-light">&times;</button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto p-6 scrollbar-hide">
-                <div v-if="cart.length === 0" class="text-center py-20">
-                    <div class="text-6xl mb-4">📦</div>
-                    <p class="text-slate-400 font-medium text-lg">您的购物篮空空如也</p>
+    <transition enter-active-class="animate__animated animate__slideInRight" leave-active-class="animate__animated animate__slideOutRight">
+        <div v-if="isCartOpen" class="fixed inset-0 z-50 flex justify-end">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="isCartOpen = false"></div>
+            <div class="relative w-full max-w-md bg-white shadow-2xl flex flex-col">
+                <div class="p-8 border-b flex justify-between items-center">
+                    <h2 class="text-2xl font-black tracking-tighter">购物篮 ({{ cartCount }})</h2>
+                    <button @click="isCartOpen = false" class="text-slate-400 hover:text-black">CLOSE</button>
                 </div>
-                <div v-for="item in cart" :key="item.id" class="flex gap-4 mb-6 pb-6 border-b border-slate-100">
-                    <div class="w-24 h-24 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden">
-                        <img :src="item.images[0]" :alt="item.name" class="w-full h-full object-cover">
-                    </div>
-                    <div class="flex-1 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between font-bold text-slate-900">
-                                <span class="text-base">{{item.name}}</span>
-                                <span class="text-lg">¥{{item.price * item.qty}}</span>
-                            </div>
-                            <p class="text-slate-500 text-xs mt-1">单价: ¥{{item.price}}</p>
-                        </div>
-                        <div class="flex items-center gap-3 mt-3">
-                            <button @click="changeQty(item, -1)" class="w-7 h-7 border rounded-md flex items-center justify-center text-sm text-slate-600 hover:bg-slate-100">-</button>
-                            <span class="text-base w-5 text-center font-bold">{{item.qty}}</span>
-                            <button @click="changeQty(item, 1)" class="w-7 h-7 border rounded-md flex items-center justify-center text-sm text-slate-600 hover:bg-slate-100">+</button>
-                            <button @click="removeItem(item)" class="ml-auto text-red-500 text-xs hover:underline">删除</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-6 border-t bg-slate-50">
-                <div class="flex justify-between mb-2 text-sm text-slate-500">
-                    <span>商品小计</span>
-                    <span>¥{{subtotal}}</span>
-                </div>
-                <div class="flex justify-between mb-6 text-sm text-slate-500">
-                    <span>预估运费</span>
-                    <span>{{subtotal >= 2000 ? '免费' : '¥20'}}</span>
-                </div>
-                <div class="flex justify-between mb-8 text-xl font-black text-slate-900">
-                    <span>总计</span>
-                    <span class="text-blue-600">¥{{total}}</span>
-                </div>
-                <button @click="openPaymentModal" :disabled="cart.length === 0" 
-                        class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-xl disabled:bg-slate-300 disabled:cursor-not-allowed">
-                    去结算
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div v-if="isPaymentModalOpen" class="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 fade-in-modal relative">
-            <button @click="closePaymentModal" class="absolute top-4 right-4 text-slate-500 hover:text-slate-900 text-3xl font-light">&times;</button>
-            <h2 class="text-2xl font-black mb-6 text-center">完成支付</h2>
-            
-            <div class="mb-6">
-                <div class="flex justify-between text-xl font-bold mb-4">
-                    <span>订单总额:</span>
-                    <span class="text-blue-600">¥{{total}}</span>
-                </div>
-                <label for="cardNum" class="block text-sm font-medium text-slate-700 mb-2">银行卡号</label>
-                <input type="text" id="cardNum" v-model="paymentDetails.cardNumber" placeholder="**** **** **** ****"
-                       class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-lg tracking-wider" maxlength="19">
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                    <label for="expiry" class="block text-sm font-medium text-slate-700 mb-2">有效期</label>
-                    <input type="text" id="expiry" v-model="paymentDetails.expiryDate" placeholder="MM/YY"
-                           class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" maxlength="5">
-                </div>
-                <div>
-                    <label for="cvv" class="block text-sm font-medium text-slate-700 mb-2">CVV</label>
-                    <input type="text" id="cvv" v-model="paymentDetails.cvv" placeholder="***"
-                           class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none" maxlength="3">
-                </div>
-            </div>
-
-            <button @click="processPayment" :disabled="!isPaymentFormValid"
-                    class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-lg disabled:bg-slate-300 disabled:cursor-not-allowed">
-                确认支付 ¥{{total}}
-            </button>
-        </div>
-    </div>
-
-    <div v-if="showOrderHistory" class="fixed inset-0 bg-black/60 z-50 flex justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-8 fade-in-modal relative">
-            <button @click="showOrderHistory = false" class="absolute top-4 right-4 text-slate-500 hover:text-slate-900 text-3xl font-light">&times;</button>
-            <h2 class="text-2xl font-black mb-8 text-center">我的订单历史</h2>
-            
-            <div v-if="orders.length === 0" class="text-center py-20 text-slate-400">
-                <div class="text-6xl mb-4">📜</div>
-                您还没有完成任何订单。
-            </div>
-
-            <div v-else class="overflow-y-auto max-h-[70vh] scrollbar-hide">
-                <div v-for="order in orders" :key="order.id" class="mb-8 p-6 bg-slate-50 rounded-lg border border-slate-100 shadow-sm">
-                    <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
-                        <span class="text-sm font-medium text-slate-700">订单号: <b class="text-blue-600">{{order.id}}</b></span>
-                        <span class="text-sm text-slate-500">{{new Date(order.date).toLocaleString()}}</span>
-                    </div>
-                    <div v-for="item in order.items" :key="item.id" class="flex items-center gap-4 mb-3">
-                        <div class="w-12 h-12 bg-slate-100 rounded-md overflow-hidden">
-                            <img :src="item.images[0]" :alt="item.name" class="w-full h-full object-cover">
-                        </div>
+                <div class="flex-1 overflow-y-auto p-8">
+                    <div v-if="cart.length === 0" class="text-center py-20 italic text-slate-400">您的清单尚未录入任何科技装备。</div>
+                    <div v-for="item in cart" :key="item.id" class="flex gap-6 mb-8 animate__animated animate__fadeInUp">
+                        <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center text-4xl">{{ item.emoji }}</div>
                         <div class="flex-1">
-                            <h4 class="font-bold text-sm">{{item.name}}</h4>
-                            <p class="text-slate-500 text-xs">数量: {{item.qty}} x ¥{{item.price}}</p>
+                            <h5 class="font-black text-slate-900">{{ item.name }}</h5>
+                            <p class="text-xs text-slate-400 mt-1 uppercase font-bold tracking-widest">UNIT ¥{{ item.price }}</p>
+                            <div class="flex items-center gap-4 mt-4">
+                                <button @click="updateQty(item, -1)" class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-100">-</button>
+                                <span class="font-black text-sm w-4 text-center">{{ item.qty }}</span>
+                                <button @click="updateQty(item, 1)" class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-100">+</button>
+                            </div>
                         </div>
-                        <span class="font-bold text-slate-900">¥{{item.price * item.qty}}</span>
-                    </div>
-                    <div class="mt-6 pt-4 border-t border-slate-200 flex justify-between font-bold text-lg">
-                        <span>订单总额:</span>
-                        <span class="text-blue-600">¥{{order.total}}</span>
+                        <div class="text-right font-black">¥{{ item.price * item.qty }}</div>
                     </div>
                 </div>
+                <div class="p-8 bg-gray-50 border-t">
+                    <div class="space-y-3 mb-8">
+                        <div class="flex justify-between text-sm text-slate-500"><span>系统预估</span><span>¥{{ subtotal }}</span></div>
+                        <div class="flex justify-between text-sm text-slate-500"><span>数字税/运费</span><span>{{ subtotal > 5000 ? '已减免' : '¥50' }}</span></div>
+                        <div class="flex justify-between text-2xl font-black pt-4 border-t"><span>实付总计</span><span class="text-blue-600">¥{{ total }}</span></div>
+                    </div>
+                    <button @click="openCheckout" :disabled="cart.length === 0" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-sm tracking-widest hover:bg-blue-600 disabled:bg-gray-300 transition-all shadow-xl">
+                        进入安全结算
+                    </button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <div v-if="selectedProduct" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" @click="selectedProduct = null"></div>
+        <div class="relative bg-white w-full max-w-4xl rounded-[3rem] overflow-hidden flex flex-col md:flex-row shadow-2xl animate__animated animate__zoomIn">
+            <div class="md:w-1/2 bg-gray-100 flex items-center justify-center text-[10rem] p-20">{{ selectedProduct.emoji }}</div>
+            <div class="md:w-1/2 p-12">
+                <button @click="selectedProduct = null" class="absolute top-8 right-8 text-slate-400 hover:text-black">✖</button>
+                <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-[10px] font-black uppercase">{{ selectedProduct.category }}</span>
+                <h2 class="text-4xl font-black text-slate-900 mt-6 leading-none">{{ selectedProduct.name }}</h2>
+                <div class="text-3xl font-black text-blue-600 mt-4 mb-8">¥{{ selectedProduct.price }}</div>
+                <div class="space-y-4 mb-10">
+                    <p class="text-slate-600 leading-relaxed font-medium">{{ selectedProduct.longDesc }}</p>
+                    <ul class="text-xs text-slate-400 space-y-2 font-bold uppercase tracking-wider">
+                        <li>● 核心工艺: {{ selectedProduct.spec1 }}</li>
+                        <li>● 功耗等级: {{ selectedProduct.spec2 }}</li>
+                        <li>● 当前库存: {{ selectedProduct.stock }} UNITS</li>
+                    </ul>
+                </div>
+                <button @click="addToCart(selectedProduct); selectedProduct = null" 
+                        class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black tracking-widest hover:bg-blue-600 transition-all">
+                    立即将其加入清单
+                </button>
             </div>
         </div>
     </div>
 
+    <div v-if="checkoutStep > 0" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-blue-900/90 backdrop-blur-xl"></div>
+        <div class="relative bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl overflow-hidden">
+            <div v-if="checkoutStep === 1">
+                <h3 class="text-2xl font-black mb-2 tracking-tighter text-slate-900">安全支付终端</h3>
+                <p class="text-slate-400 text-xs font-bold mb-8 uppercase tracking-widest">请选择您的加密支付方式</p>
+                
+                <div class="space-y-4 mb-8">
+                    <div class="p-4 border-2 border-blue-600 rounded-2xl flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">💳</div>
+                            <div>
+                                <div class="text-sm font-black">数字信用卡</div>
+                                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">VISA / MASTER SECURE</div>
+                            </div>
+                        </div>
+                        <div class="w-5 h-5 rounded-full border-4 border-blue-600"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-4 mb-10">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">模拟卡号</label>
+                    <input type="text" placeholder="#### #### #### ####" class="w-full bg-gray-50 border-none rounded-xl py-4 px-4 font-mono">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" placeholder="MM/YY" class="bg-gray-50 border-none rounded-xl py-4 px-4 text-center font-mono text-sm">
+                        <input type="password" placeholder="CVV" class="bg-gray-50 border-none rounded-xl py-4 px-4 text-center font-mono text-sm">
+                    </div>
+                </div>
+
+                <button @click="handlePayment" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black tracking-[0.2em] shadow-lg shadow-blue-200 hover:scale-[1.02] transition-transform">
+                    确认支付 ¥{{ total }}
+                </button>
+                <button @click="checkoutStep = 0" class="w-full text-slate-400 font-bold text-xs mt-4 uppercase tracking-widest">取消交易</button>
+            </div>
+
+            <div v-if="checkoutStep === 2" class="text-center py-10 animate__animated animate__fadeIn">
+                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-8 text-green-600">✔</div>
+                <h3 class="text-3xl font-black mb-4">支付已授权</h3>
+                <p class="text-slate-400 text-sm font-medium leading-relaxed px-6">您的资金已锁定，系统正在调度最近的物流中心进行配货。单号将在数秒内生成。</p>
+                <div class="mt-10 pt-10 border-t">
+                    <button @click="finishCheckout" class="bg-slate-900 text-white px-10 py-4 rounded-xl font-black text-sm tracking-widest">查看订单历史</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    const { createApp, ref, computed, onMounted } = Vue;
+const { createApp, ref, computed, watch, onMounted } = Vue;
 
-    createApp({
-        setup() {
-            // --- 严谨的状态管理 ---
-            const searchQuery = ref('');
-            const activeCategory = ref('全部');
-            const categories = ['全部', '核心硬件', '外设周边', '移动端', '智造工具'];
+createApp({
+    setup() {
+        // --- 核心响应式状态 ---
+        const currentView = ref('mall');
+        const activeCat = ref('全部商品');
+        const search = ref('');
+        const isCartOpen = ref(false);
+        const selectedProduct = ref(null);
+        const checkoutStep = ref(0);
+
+        const categories = ['全部商品', '核心组件', '穿戴设备', '智能交互'];
+
+        // --- 严谨的数据库定义 ---
+        const products = ref([
+            { id: 1, name: "智核 RTX 5090 Super", category: "核心组件", price: 19999, stock: 4, emoji: "📟", spec1: "2nm TSMC", spec2: "450W TDP", desc: "采用量子纠缠渲染引擎，每一帧都是真实现场。", longDesc: "这是2026年的性能巅峰。支持真·光线追踪及实时AI插帧技术，拥有 128GB 高带宽显存，专为多维宇宙建模而生。" },
+            { id: 2, name: "光路量子头显", category: "穿戴设备", price: 6800, stock: 12, emoji: "🥽", spec1: "16K Micro-LED", spec2: "120° FOV", desc: "神经拟真技术，彻底告别佩戴眩晕感。", longDesc: "不再是视觉仿真，而是直接将光信号编码至视神经。超薄镜身，佩戴如若无物。" },
+            { id: 3, name: "石墨烯智能指环", category: "穿戴设备", price: 1299, stock: 35, emoji: "💍", spec1: "人体动能驱动", spec2: "IPX9 防水", desc: "实时监测DNA活性，生命体征全天候同步。", longDesc: "无需充电，通过体温差供电。全陶瓷机身，不仅是装饰，更是您的数字身份证。" },
+            { id: 4, name: "浮空全息投射仪", category: "智能交互", price: 3499, stock: 7, emoji: "🔮", spec1: "激光介质电离", spec2: "360° 可视", desc: "在空气中直接触碰画面，触感反馈精准。", longDesc: "利用空气分子电离产生可见光点。支持手势操作和多点触控反馈，是家庭娱乐和协同工作的未来方案。" },
+            { id: 5, name: "液态金属机械键盘", category: "智能交互", price: 2588, stock: 2, emoji: "⌨️", desc: "按键力度可随心情调节，自愈合涂层。", longDesc: "采用磁流体轴体，支持0.1mm-4.0mm行程自定义。外壳采用液态金属合金，即便划伤也能在常温下缓慢修复。" },
+            { id: 6, name: "生物光纤路由器", category: "核心组件", price: 4200, stock: 0, emoji: "📡", spec1: "60GHz 无线网", spec2: "8路信号放大", desc: "穿墙性能无敌，支持10万台设备连接。", longDesc: "基于生物蛋白质光导纤维技术。拥有极强的抗干扰能力，能在核磁环境下保持满速传输。" }
+        ]);
+
+        const cart = ref(JSON.parse(localStorage.getItem('xin_v3_cart') || '[]'));
+        const orderHistory = ref(JSON.parse(localStorage.getItem('xin_v3_orders') || '[]'));
+
+        // --- 计算属性 ---
+        const filteredProducts = computed(() => {
+            return products.value.filter(p => {
+                const cMatch = activeCat.value === '全部商品' || p.category === activeCat.value;
+                const sMatch = p.name.toLowerCase().includes(search.value.toLowerCase());
+                return cMatch && sMatch;
+            });
+        });
+
+        const cartCount = computed(() => cart.value.reduce((s, i) => s + i.qty, 0));
+        const subtotal = computed(() => cart.value.reduce((s, i) => s + (i.price * i.qty), 0));
+        const total = computed(() => {
+            if (subtotal.value === 0) return 0;
+            return subtotal.value > 5000 ? subtotal.value : subtotal.value + 50;
+        });
+
+        // --- 方法链条 ---
+        const addToCart = (p) => {
+            const entry = cart.value.find(i => i.id === p.id);
+            if (entry) {
+                if (entry.qty < p.stock) entry.qty++;
+                else alert("当前库存不足以支持更多配额");
+            } else {
+                cart.value.push({ ...p, qty: 1 });
+            }
+            saveCart();
+            isCartOpen.value = true;
+        };
+
+        const updateQty = (item, delta) => {
+            const p = products.value.find(x => x.id === item.id);
+            item.qty += delta;
+            if (item.qty > p.stock) {
+                item.qty = p.stock;
+                alert("已达到该商品的最大库存");
+            }
+            if (item.qty <= 0) {
+                cart.value = cart.value.filter(i => i.id !== item.id);
+            }
+            saveCart();
+        };
+
+        const saveCart = () => localStorage.setItem('xin_v3_cart', JSON.stringify(cart.value));
+
+        const openDetail = (p) => selectedProduct.value = p;
+
+        const scrollToProducts = () => {
+            document.getElementById('mall-main').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        const openCheckout = () => {
+            isCartOpen.value = false;
+            checkoutStep.value = 1;
+        };
+
+        const handlePayment = () => {
+            // 严谨性校验：模拟支付延迟
+            checkoutStep.value = 2; // 进入成功反馈
+        };
+
+        const finishCheckout = () => {
+            const newOrder = {
+                id: 'XIN-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                date: new Date().toLocaleString(),
+                items: [...cart.value],
+                total: total.value
+            };
             
-            const isCartOpen = ref(false);
-            const isPaymentModalOpen = ref(false);
-            const showOrderHistory = ref(false);
-
-            const selectedProduct = ref(null);
-            const currentImageIndex = ref(0);
-
-            const paymentDetails = ref({
-                cardNumber: '', expiryDate: '', cvv: ''
+            // 严谨逻辑：真实扣减内存库存
+            cart.value.forEach(ci => {
+                const p = products.value.find(x => x.id === ci.id);
+                if (p) p.stock -= ci.qty;
             });
 
-            // 严谨的商品数据库 (含多图和详细描述)
-            const products = ref([
-                { 
-                    id: 1, name: "智核 RTX 5090 Ti Ultra", category: "核心硬件", price: 18999, stock: 5, 
-                    images: ['https://s2.loli.net/2024/02/09/x6b8oWc51G2EwQz.jpg', 'https://s2.loli.net/2024/02/09/O93c6lJd4tWjPnk.jpg', 'https://s2.loli.net/2024/02/09/yL5tA7Mhrx3nU9P.jpg'],
-                    shortDesc: "2nm 制程，内置 Xin-Shop 专属 AI 冷却模块，性能巅峰。",
-                    longDesc: "这是 NVIDIA 和 Xin-Shop 联合推出的 2026 年旗舰级显卡，采用革命性 2nm Blackwell 架构，拥有 24576 个 CUDA 核心，搭载 48GB GDDR7 显存。内置的 AI 冷却系统能够根据实时负载智能调整散热策略，确保核心温度永远处于最佳工作区间。无论是 8K 游戏、专业级 3D 渲染，还是大规模 AI 模型训练，都能提供无与伦比的性能表现。限量发售，每人限购一张。"
-                },
-                { 
-                    id: 2, name: "量子磁悬浮键盘", category: "外设周边", price: 2199, stock: 12, 
-                    images: ['https://s2.loli.net/2024/02/09/vFqKk18WcQd7rJh.jpg', 'https://s2.loli.net/2024/02/09/7j1OaN8dYQ4tqPM.jpg', 'https://s2.loli.net/2024/02/09/p9YgqDCMOaFkK5V.jpg'],
-                    shortDesc: "零延迟磁轴触发，全铝阳极氧化机身，带来极致输入体验。",
-                    longDesc: "这款键盘采用最新的霍尔效应磁悬浮开关技术，实现了真正意义上的零物理延迟触发。每个按键的触发行程和力度都可自定义调节，满足不同用户的个性化需求。全铝 CNC 机身搭配 PBT 键帽，触感冰凉顺滑，耐磨不打油。RGB 背光系统支持 1600 万色自定义，可通过 Xin-Studio 软件进行宏编程和灯效联动。适用于电竞玩家和专业程序员。"
-                },
-                { 
-                    id: 3, name: "Xin-Phone 18 Pro Max", category: "移动端", price: 9999, stock: 8, 
-                    images: ['https://s2.loli.net/2024/02/09/Ua7YhC6nZzQJkGg.jpg', 'https://s2.loli.net/2024/02/09/Q2x7j4S981PcF3J.jpg', 'https://s2.loli.net/2024/02/09/6lq7L8xXQfYWzaO.jpg'],
-                    shortDesc: "钛金属中框，搭载 X1 仿生智核芯片，影像系统全面升级。",
-                    longDesc: "Xin-Phone 18 Pro Max 是我们旗舰智能手机的巅峰之作。采用航空级钛金属中框，极致轻薄且坚固。搭载全新的 X1 仿生智核芯片，AI 性能提升 500%，能耗降低 30%。后置四摄系统，包括一颗 2 亿像素主摄，支持 8K 60fps 杜比视界录制。ProMotion XDR 显示屏，峰值亮度达到 3000 尼特。全新的卫星通信模块，让你在任何角落都能保持联系。附赠 1TB 超高速闪存卡。"
-                },
-                { 
-                    id: 4, name: "智造笔 3.0", category: "智造工具", price: 699, stock: 15, 
-                    images: ['https://s2.loli.net/2024/02/09/XN17FkL9I4c6yZt.jpg', 'https://s2.loli.net/2024/02/09/P9uBv4Azn6mDqQY.jpg', 'https://s2.loli.net/2024/02/09/5l9D6iF4kUaGzPj.jpg'],
-                    shortDesc: "实时压力感应，倾斜识别，适用于专业绘图和笔记。",
-                    longDesc: "智造笔 3.0 是一款为创意专业人士和学生设计的精密输入工具。它拥有 8192 级压感和 60 度倾斜识别，提供纸笔般的真实书写体验。超低延迟，笔尖反馈迅速准确。内置可编程按键，可自定义常用功能。磁吸充电，续航长达 12 小时。兼容 Xin-Pad 和其他主流平板设备。是您进行数字绘画、工程设计和学习笔记的理想伙伴。"
-                },
-                { 
-                    id: 5, name: "智核超宽带路由器", category: "智能家居", price: 1299, stock: 0, 
-                    images: ['https://s2.loli.net/2024/02/09/jE2oY7Pz5Vq1Gxl.jpg', 'https://s2.loli.net/2024/02/09/iS9P8ZlY6oU5xKj.jpg', 'https://s2.loli.net/2024/02/09/FzM9p4rY5w0uV2q.jpg'],
-                    shortDesc: "WiFi 7 标准，全屋无缝覆盖，支持 AI 流量调度。",
-                    longDesc: "这款路由器支持最新的 WiFi 7 (802.11be) 标准，提供高达 48Gbps 的理论吞吐量。采用分布式网状网络技术，确保全屋无死角覆盖。内置 AI 流量调度引擎，能够智能识别设备类型并优化带宽分配，优先保障游戏、4K 视频等高优先级应用。支持 OFDMA、MLO 等先进技术，多设备同时连接也能保持高速稳定。通过 Xin-Home App 轻松管理。"
-                }
-            ]);
+            orderHistory.value.unshift(newOrder);
+            localStorage.setItem('xin_v3_orders', JSON.stringify(orderHistory.value));
+            
+            cart.value = [];
+            saveCart();
+            checkoutStep.value = 0;
+            currentView.value = 'orders';
+        };
 
-            // 严谨的购物车持久化
-            const cart = ref(JSON.parse(localStorage.getItem('xin_shop_v3_cart') || '[]'));
-            // 严谨的订单历史持久化
-            const orders = ref(JSON.parse(localStorage.getItem('xin_shop_v3_orders') || '[]'));
-
-            // --- 计算属性 (核心逻辑) ---
-            const filteredProducts = computed(() => {
-                let p = products.value;
-                if (activeCategory.value !== '全部') {
-                    p = p.filter(prod => prod.category === activeCategory.value);
-                }
-                if (searchQuery.value) {
-                    p = p.filter(prod => prod.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
-                }
-                return p;
-            });
-
-            const cartCount = computed(() => cart.value.reduce((sum, item) => sum + item.qty, 0));
-            const subtotal = computed(() => cart.value.reduce((sum, item) => sum + (item.price * item.qty), 0));
-            const shippingFee = computed(() => subtotal.value >= 2000 || subtotal.value === 0 ? 0 : 20);
-            const total = computed(() => subtotal.value + shippingFee.value);
-
-            const isPaymentFormValid = computed(() => {
-                const { cardNumber, expiryDate, cvv } = paymentDetails.value;
-                // 严谨的校验规则 (模拟)
-                const cardValid = /^\d{4}\s?\d{4}\s?\d{4}\s?\d{4}$/.test(cardNumber);
-                const expiryValid = /^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDate);
-                const cvvValid = /^\d{3}$/.test(cvv);
-                return cardValid && expiryValid && cvvValid && cart.value.length > 0;
-            });
-
-            // --- 方法 (行为逻辑) ---
-
-            // 购物车操作
-            const addToCart = (product) => {
-                if (product.stock === 0) {
-                    alert("抱歉，该商品已售罄！");
-                    return;
-                }
-                const itemInCart = cart.value.find(item => item.id === product.id);
-                if (itemInCart) {
-                    if (itemInCart.qty < product.stock) {
-                        itemInCart.qty++;
-                    } else {
-                        alert(`库存不足！${product.name} 仅剩 ${product.stock} 件。`);
+        return {
+            currentView, activeCat, search, isCartOpen, selectedProduct, checkoutStep,
+            categories, products, filteredProducts, cart, orderHistory,
+            cartCount, subtotal, total,
+            addToCart, updateQty, openDetail, scrollToProducts, openCheckout, handlePayment, finishCheckout
+        };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>
