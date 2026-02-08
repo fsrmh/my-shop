@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xin-Shop | 智选核心商城</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        [v-cloak] { display: none; }
+        .product-card:hover { transform: translateY(-5px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .cart-bounce-enter-active { animation: bounce-in 0.5s; }
+        @keyframes bounce-in {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+<div id="app" v-cloak>
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-600 tracking-tighter">XIN-SHOP</h1>
+            
+            <div class="flex-1 max-w-md mx-10 hidden md:block">
+                <input v-model="searchQuery" type="text" placeholder="搜索黑科技商品..." 
+                       class="w-full px-4 py-2 border rounded-full bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+            </div>
+
+            <div class="flex items-center gap-6">
+                <button @click="showCart = true" class="relative group">
+                    <span class="text-gray-600 group-hover:text-blue-600 font-medium text-lg">🛒 购物车</span>
+                    <span v-if="cartTotalCount > 0" 
+                          class="absolute -top-2 -right-3 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                        {{ cartTotalCount }}
+                    </span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-6 py-8">
+        <div class="flex gap-4 mb-8 overflow-x-auto pb-2">
+            <button v-for="cat in categories" :key="cat" 
+                    @click="activeCategory = cat"
+                    :class="['px-6 py-2 rounded-full whitespace-nowrap transition', activeCategory === cat ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-gray-600 hover:bg-gray-200']">
+                {{ cat }}
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div v-for="product in filteredProducts" :key="product.id" 
+                 class="product-card bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                <div class="h-48 bg-gray-200 flex items-center justify-center text-4xl">
+                    {{ product.image }}
+                </div>
+                <div class="p-6 flex-1 flex flex-col">
+                    <span class="text-xs text-blue-500 font-bold uppercase mb-2">{{ product.category }}</span>
+                    <h3 class="font-bold text-lg mb-2">{{ product.name }}</h3>
+                    <p class="text-gray-500 text-sm mb-4 flex-1">{{ product.desc }}</p>
+                    <div class="flex justify-between items-center mt-auto">
+                        <span class="text-xl font-black text-gray-900">¥{{ product.price }}</span>
+                        <button @click="addToCart(product)" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition shadow-md">
+                            加入清单
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div v-if="showCart" class="fixed inset-0 z-[100] flex">
+        <div class="flex-1 bg-black/50" @click="showCart = false"></div>
+        <div class="w-full max-w-md bg-white h-full shadow-2xl p-8 flex flex-col">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold">我的清单 ({{ cartTotalCount }})</h2>
+                <button @click="showCart = false" class="text-3xl">&times;</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto">
+                <div v-if="cart.length === 0" class="text-center py-20 text-gray-400">
+                    空空如也，去逛逛吧~
+                </div>
+                <div v-for="item in cart" :key="item.id" class="flex gap-4 mb-6 border-b pb-6">
+                    <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center text-3xl">{{ item.image }}</div>
+                    <div class="flex-1">
+                        <h4 class="font-bold">{{ item.name }}</h4>
+                        <p class="text-gray-500 text-sm">单价: ¥{{ item.price }}</p>
+                        <div class="flex items-center gap-3 mt-2">
+                            <button @click="updateQty(item, -1)" class="w-8 h-8 border rounded hover:bg-gray-50">-</button>
+                            <span class="font-medium">{{ item.qty }}</span>
+                            <button @click="updateQty(item, 1)" class="w-8 h-8 border rounded hover:bg-gray-50">+</button>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold">¥{{ item.price * item.qty }}</p>
+                        <button @click="removeItem(item)" class="text-red-400 text-xs mt-2 underline">删除</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t pt-6 mt-6">
+                <div class="flex justify-between text-xl font-bold mb-6">
+                    <span>合计金额:</span>
+                    <span class="text-blue-600">¥{{ cartTotalPrice }}</span>
+                </div>
+                <button @click="checkout" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition">
+                    极速结算
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    createApp({
+        setup() {
+            const searchQuery = ref('');
+            const activeCategory = ref('全部商品');
+            const showCart = ref(false);
+            const categories = ['全部商品', '电子产品', '穿戴设备', '智能家居', '极客周边'];
+            
+            // 严谨的模拟数据库
+            const products = ref([
+                { id: 1, name: "智核显卡 5090", category: "电子产品", price: 15999, image: "📟", desc: "2026年旗舰级算力核心，支持真·实时渲染。" },
+                { id: 2, name: "神经连接头盔", category: "穿戴设备", price: 3200, image: "🥽", desc: "沉浸式Meta体验，极低延迟响应。" },
+                { id: 3, name: "量子咖啡机", category: "智能家居", price: 899, image: "☕", desc: "口感恒定在最佳观测点的咖啡。" },
+                { id: 4, name: "机械键帽-小新版", category: "极客周边", price: 129, image: "⌨️", desc: "PBT材质，手感细腻，极客必备。" },
+                { id: 5, name: "便携投影仪 Pro", category: "电子产品", price: 2499, image: "📽️", desc: "4K高清，激光光源，随时随地大屏。" },
+                { id: 6, name: "健康监测环", category: "穿戴设备", price: 599, image: "💍", desc: "监测血氧、心率、睡眠，全天候守护。" }
+            ]);
+
+            const cart = ref(JSON.parse(localStorage.getItem('xin_shop_cart') || '[]'));
+
+            // 严谨的搜索与筛选逻辑
+            const filteredProducts = computed(() => {
+                return products.value.filter(p => {
+                    const matchCat = activeCategory.value === '全部商品' || p.category === activeCategory.value;
+                    const matchSearch = p.name.toLowerCase().includes(searchQuery.value.toLowerCase());
+                    return matchCat && matchSearch;
+                });
+            });
+
+            // 购物车统计
+            const cartTotalCount = computed(() => cart.value.reduce((sum, item) => sum + item.qty, 0));
+            const cartTotalPrice = computed(() => cart.value.reduce((sum, item) => sum + (item.price * item.qty), 0));
+
+            // 操作方法
+            const addToCart = (product) => {
+                const exist = cart.value.find(i => i.id === product.id);
+                if (exist) {
+                    exist.qty++;
+                } else {
+                    cart.value.push({ ...product, qty: 1 });
+                }
+                saveCart();
+            };
+
+            const updateQty = (item, delta) => {
+                item.qty += delta;
+                if (item.qty <= 0) removeItem(item);
+                saveCart();
+            };
+
+            const removeItem = (item) => {
+                cart.value = cart.value.filter(i => i.id !== item.id);
+                saveCart();
+            };
+
+            const saveCart = () => {
+                localStorage.setItem('xin_shop_cart', JSON.stringify(cart.value));
+            };
+
+            const checkout = () => {
+                if (cart.value.length === 0) return;
+                alert(`🛍️ 模拟结算成功！\n总金额: ¥${cartTotalPrice.value}\n感谢在 Xin-Shop 购物。`);
+                cart.value = [];
+                saveCart();
+                showCart.value = false;
+            };
+
+            return {
+                searchQuery, activeCategory, showCart, categories, products,
+                filteredProducts, cart, cartTotalCount, cartTotalPrice,
+                addToCart, updateQty, removeItem, checkout
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
